@@ -1,1 +1,2 @@
-# Refine's ScoreboardAPI
+# ScoreboardAPI
+Refine's ScoreboardAPI | Uses MegavexNetwork's scoreboard-library 
