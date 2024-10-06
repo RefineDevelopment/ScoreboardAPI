@@ -3,7 +3,6 @@ package xyz.refinedev.api.scoreboard.utils;
 import com.google.common.collect.ImmutableMap;
 
 import lombok.experimental.UtilityClass;
-import lombok.extern.log4j.Log4j2;
 import lombok.val;
 
 import net.kyori.adventure.text.Component;
@@ -18,7 +17,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@UtilityClass @Log4j2
+@UtilityClass
 public class ColorUtil {
 
     private static final Map<ChatColor, Color> COLOR_MAPPINGS = ImmutableMap.<ChatColor, Color>builder()

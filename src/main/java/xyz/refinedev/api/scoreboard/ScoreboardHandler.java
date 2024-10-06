@@ -8,11 +8,13 @@ import net.megavex.scoreboardlibrary.api.ScoreboardLibrary;
 import net.megavex.scoreboardlibrary.api.exception.NoPacketAdapterAvailableException;
 import net.megavex.scoreboardlibrary.api.noop.NoopScoreboardLibrary;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import xyz.refinedev.api.scoreboard.adapter.ScoreboardAdapter;
 import xyz.refinedev.api.scoreboard.component.DefaultScoreboardComponent;
+import xyz.refinedev.api.scoreboard.thread.ScoreboardThread;
 
 import java.util.Map;
 import java.util.UUID;
@@ -43,6 +45,7 @@ public class ScoreboardHandler {
     @Setter private boolean debug;
 
     private ScoreboardLibrary scoreboardLibrary;
+    private ScoreboardThread thread;
 
     public void init() {
         try {
@@ -52,6 +55,25 @@ public class ScoreboardHandler {
             this.scoreboardLibrary = new NoopScoreboardLibrary();
             this.plugin.getLogger().warning("No scoreboard packet adapter available!");
         }
+
+        this.setup();
+    }
+
+    private void setup() {
+        // Ensure that the thread has stopped running.
+        if (this.thread != null) {
+            this.thread.stopExecuting();
+            this.thread.interrupt();
+            this.thread = null;
+        }
+
+        // Register new boards for existing online players.
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            getBoards().putIfAbsent(player.getUniqueId(), new DefaultScoreboardComponent(adapter, scoreboardLibrary.createSidebar(), player));
+        }
+
+        // Start Thread.
+        this.thread = new ScoreboardThread(this);
     }
 
     public void reload() {
