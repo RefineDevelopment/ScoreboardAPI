@@ -76,6 +76,10 @@ public class DefaultScoreboardComponent {
                 this.sidebar.removePlayer(this.player);
             }
             return;
+        } else {
+            if (!this.sidebar.players().contains(this.player)) {
+                this.sidebar.addPlayer(this.player);
+            }
         }
 
         // Advance title animation to the next frame
