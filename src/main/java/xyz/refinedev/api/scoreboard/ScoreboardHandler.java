@@ -14,7 +14,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import xyz.refinedev.api.scoreboard.adapter.ScoreboardAdapter;
 import xyz.refinedev.api.scoreboard.component.DefaultScoreboardComponent;
-import xyz.refinedev.api.scoreboard.thread.ScoreboardThread;
+import xyz.refinedev.api.scoreboard.thread.ScoreboardTickThread;
 
 import java.util.Map;
 import java.util.UUID;
@@ -45,7 +45,7 @@ public class ScoreboardHandler {
     @Setter private boolean debug;
 
     private ScoreboardLibrary scoreboardLibrary;
-    private ScoreboardThread thread;
+    private ScoreboardTickThread thread;
 
     public void init() {
         try {
@@ -73,7 +73,7 @@ public class ScoreboardHandler {
         }
 
         // Start Thread.
-        this.thread = new ScoreboardThread(this);
+        this.thread = new ScoreboardTickThread(this);
     }
 
     public void reload() {

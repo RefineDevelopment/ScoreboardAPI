@@ -9,7 +9,7 @@ import xyz.refinedev.api.scoreboard.component.DefaultScoreboardComponent;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-public class ScoreboardThread extends Thread {
+public class ScoreboardTickThread extends Thread {
 
     private final ScoreboardHandler scoreboardHandler;
     private final Logger logger;
@@ -20,8 +20,8 @@ public class ScoreboardThread extends Thread {
      *
      * @param scoreboardHandler instance.
      */
-    public ScoreboardThread(ScoreboardHandler scoreboardHandler) {
-        super("Bolt - Scoreboard Thread");
+    public ScoreboardTickThread(ScoreboardHandler scoreboardHandler) {
+        super(scoreboardHandler.getPlugin().getName() + " - Scoreboard Thread");
         this.scoreboardHandler = scoreboardHandler;
         this.logger = scoreboardHandler.getPlugin().getLogger();
         this.start();

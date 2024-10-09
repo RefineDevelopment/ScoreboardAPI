@@ -9,19 +9,21 @@ import net.kyori.adventure.text.Component;
 import net.megavex.scoreboardlibrary.api.sidebar.Sidebar;
 import net.megavex.scoreboardlibrary.api.sidebar.component.ComponentSidebarLayout;
 import net.megavex.scoreboardlibrary.api.sidebar.component.SidebarComponent;
-import net.megavex.scoreboardlibrary.api.sidebar.component.animation.CollectionSidebarAnimation;
 import net.megavex.scoreboardlibrary.api.sidebar.component.animation.SidebarAnimation;
 
 import org.bukkit.entity.Player;
 
 import xyz.refinedev.api.scoreboard.adapter.ScoreboardAdapter;
+import xyz.refinedev.api.scoreboard.animation.ScoreboardAnimation;
+import xyz.refinedev.api.scoreboard.utils.AnimationUtil;
 import xyz.refinedev.api.scoreboard.utils.ColorUtil;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Getter
 public class DefaultScoreboardComponent {
+
+    private final Map<String, ScoreboardAnimation> animations = new HashMap<>();
 
     private final Sidebar sidebar;
     private final Player player;
@@ -53,7 +55,7 @@ public class DefaultScoreboardComponent {
 
         this.animated = titleLines.size() > 1;
         if (animated) {
-            this.titleAnimation = createAnimation(titleLines);
+            this.titleAnimation = AnimationUtil.createAnimation(titleLines);
             title = SidebarComponent.animatedLine(titleAnimation);
         } else {
             title = SidebarComponent.staticLine(ColorUtil.translate(titleLines.get(0)));
@@ -82,17 +84,47 @@ public class DefaultScoreboardComponent {
             }
         }
 
-        // Advance title animation to the next frame
-        if (this.animated && this.titleAnimation != null) {
-            this.titleAnimation.nextFrame();
-        }
+        this.tickAnimation();
 
-        //TODO: Better implementation so this doesn't spam create stuff
         SidebarComponent component = createComponent(lines);
         this.componentSidebar = new ComponentSidebarLayout(title, component);
 
         // Update sidebar title & lines
         this.componentSidebar.apply(this.sidebar);
+    }
+
+    public void tickAnimation() {
+        if (this.sidebar.closed()) return;
+
+        // Advance title animation to the next frame
+        if (this.animated && this.titleAnimation != null) {
+            this.titleAnimation.nextFrame();
+        }
+
+        for ( ScoreboardAnimation animation : this.animations.values() ) {
+            animation.getComponent().nextFrame();
+        }
+
+        // Update sidebar title & lines
+        this.componentSidebar.apply(this.sidebar);
+    }
+
+    /**
+     * Add an animation to this scoreboard.
+     *
+     * @param animation {@link SidebarAnimation} The animation to add.
+     */
+    public void addAnimation(ScoreboardAnimation animation) {
+        this.animations.put(animation.getIdentifier(), animation);
+    }
+
+    /**
+     * Remove an animation from this scoreboard.
+     *
+     * @param identifier {@link String} The identifier of the animation to remove.
+     */
+    public void removeAnimation(String identifier) {
+        this.animations.remove(identifier);
     }
 
     private SidebarComponent createComponent(List<String> lines) {
@@ -101,22 +133,29 @@ public class DefaultScoreboardComponent {
             if (line.isEmpty() || line.equals(" ")) {
                 builder.addBlankLine();
                 continue;
-            } else if (line.contains("<") || line.contains(">") || line.contains("%")) {
-                builder.addDynamicLine(() -> ColorUtil.translate(line));
-                continue;
             }
 
-            builder.addStaticLine(ColorUtil.translate(line));
+            // Check if the line contains any animation identifier
+            boolean handled = false;
+            for (String identifier : this.animations.keySet()) {
+                if (line.contains(identifier)) {
+                    // Add the animated line if the identifier is found
+                    ScoreboardAnimation animation = this.animations.get(identifier);
+                    builder.addAnimatedLine(animation.getComponent());
+                    handled = true; // Mark this line as handled
+                    break; // Break out of the animation map lookup loop
+                }
+            }
+
+            // If the line wasn't handled by an animation, process it normally
+            if (!handled) {
+                if (line.contains("<") || line.contains(">") || line.contains("%")) {
+                    builder.addDynamicLine(() -> ColorUtil.translate(line));
+                } else {
+                    builder.addStaticLine(ColorUtil.translate(line));
+                }
+            }
         }
         return builder.build();
-    }
-
-    private SidebarAnimation<Component> createAnimation(List<String> title) {
-        List<Component> frames = new ArrayList<>(title.size());
-        for (String line : title) {
-            frames.add(ColorUtil.translate(line));
-        }
-
-        return new CollectionSidebarAnimation<>(frames);
     }
 }
