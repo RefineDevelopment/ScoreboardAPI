@@ -19,11 +19,6 @@ import java.util.List;
 public interface ScoreboardAdapter {
 
     /**
-     * Is this scoreboard title animated
-     */
-    boolean isTitleAnimated();
-
-    /**
      * Gets the scoreboard title.
      *
      * @param player who's title is being displayed.
