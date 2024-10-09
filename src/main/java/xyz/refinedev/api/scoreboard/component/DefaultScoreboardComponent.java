@@ -101,12 +101,11 @@ public class DefaultScoreboardComponent {
             this.titleAnimation.nextFrame();
         }
 
-        for ( ScoreboardAnimation animation : this.animations.values() ) {
-            animation.getComponent().nextFrame();
+        if (!this.animations.isEmpty()) {
+            for ( ScoreboardAnimation animation : this.animations.values() ) {
+                animation.getComponent().nextFrame();
+            }
         }
-
-        // Update sidebar title & lines
-        this.componentSidebar.apply(this.sidebar);
     }
 
     /**
@@ -137,13 +136,15 @@ public class DefaultScoreboardComponent {
 
             // Check if the line contains any animation identifier
             boolean handled = false;
-            for (String identifier : this.animations.keySet()) {
-                if (line.contains(identifier)) {
-                    // Add the animated line if the identifier is found
-                    ScoreboardAnimation animation = this.animations.get(identifier);
-                    builder.addAnimatedLine(animation.getComponent());
-                    handled = true; // Mark this line as handled
-                    break; // Break out of the animation map lookup loop
+            if (!this.animations.isEmpty()) {
+                for (String identifier : this.animations.keySet()) {
+                    if (line.contains(identifier)) {
+                        // Add the animated line if the identifier is found
+                        ScoreboardAnimation animation = this.animations.get(identifier);
+                        builder.addAnimatedLine(animation.getComponent());
+                        handled = true; // Mark this line as handled
+                        break; // Break out of the animation map lookup loop
+                    }
                 }
             }
 
