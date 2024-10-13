@@ -6,8 +6,8 @@ import lombok.experimental.UtilityClass;
 import lombok.val;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
+
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -19,6 +19,8 @@ import java.util.regex.Pattern;
 
 @UtilityClass
 public class ColorUtil {
+
+    private static final LegacyComponentSerializer legacySerializer = LegacyComponentSerializer.builder().build();
 
     private static final Map<ChatColor, Color> COLOR_MAPPINGS = ImmutableMap.<ChatColor, Color>builder()
             .put(ChatColor.BLACK, new Color(0, 0, 0))
@@ -40,26 +42,6 @@ public class ColorUtil {
             .build();
 
     private static final Pattern hexPattern = Pattern.compile("&#[A-Fa-f0-9]{6}");
-
-    public NamedTextColor getLastColor(String input) {
-        ChatColor color = getLastColors(input);
-        NamedTextColor textColor = NamedTextColor.WHITE;
-        if (color == null) return textColor;
-
-        net.md_5.bungee.api.ChatColor md5Color = color.asBungee();
-
-        if (!canHex()) {
-            return ConversionUtil.bungeeToNamedTextColor(md5Color);
-        }
-
-        if (md5Color.getColor() == null) {
-            return textColor;
-        }
-
-        // I couldn't really find a direct conversion, but in case of bungee's color, it provides java color which be used to convert to adventure's color
-        TextColor parsed = TextColor.color(md5Color.getColor().getRed(), md5Color.getColor().getGreen(), md5Color.getColor().getBlue());
-        return NamedTextColor.nearestTo(parsed);
-    }
 
     /**
      * Get last colors from a string in form of {@link Color}
@@ -138,7 +120,7 @@ public class ColorUtil {
      * @return       {@link Component}
      */
     public Component translate(String string) {
-        return Component.text(color(string));
+        return legacySerializer.deserialize(color(string));
     }
 
     public String getRaw(String string) {
