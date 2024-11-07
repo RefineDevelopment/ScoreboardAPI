@@ -1,5 +1,8 @@
 package xyz.refinedev.api.scoreboard.utils;
 
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.manager.player.PlayerManager;
+import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.google.common.collect.ImmutableMap;
 
 import lombok.experimental.UtilityClass;
@@ -11,6 +14,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 
 import java.awt.*;
 import java.util.Map;
@@ -88,10 +92,10 @@ public class ColorUtil {
      * @param text {@link String} Input Text
      * @return     {@link String} Output Text (with HexColor Support)
      */
-    public String color(String text) {
+    public String color(String text, boolean canHex) {
         if (text == null) return "";
 
-        if (canHex()) {
+        if (canHex) {
             Matcher matcher = hexPattern.matcher(text);
             while (matcher.find()) {
                 try {
@@ -114,13 +118,35 @@ public class ColorUtil {
     }
 
     /**
+     * Translate '&' based color codes into bukkit ones
+     *
+     * @param text {@link String} Input Text
+     * @return     {@link String} Output Text (with HexColor Support)
+     */
+    public String color(String text) {
+        return color(text, canHex());
+    }
+
+    /**
+     * Converts a simple string to a {@link Component}
+     *
+     * @param string {@link String}
+     * @return       {@link Component}
+     */
+    public Component translate(Player player, String string) {
+        PlayerManager playerManager = PacketEvents.getAPI().getPlayerManager();
+        ClientVersion version = playerManager.getClientVersion(player);
+        return Component.text(color(string, version.isNewerThanOrEquals(ClientVersion.V_1_16)));
+    }
+
+    /**
      * Converts a simple string to a {@link Component}
      *
      * @param string {@link String}
      * @return       {@link Component}
      */
     public Component translate(String string) {
-        return legacySerializer.deserialize(color(string));
+        return Component.text(color(string));
     }
 
     public String getRaw(String string) {

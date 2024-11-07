@@ -58,7 +58,7 @@ public class DefaultScoreboardComponent {
             this.titleAnimation = AnimationUtil.createAnimation(titleLines);
             title = SidebarComponent.animatedLine(titleAnimation);
         } else {
-            title = SidebarComponent.staticLine(ColorUtil.translate(titleLines.get(0)));
+            title = SidebarComponent.staticLine(ColorUtil.translate(player, titleLines.get(0)));
         }
     }
 
@@ -151,9 +151,9 @@ public class DefaultScoreboardComponent {
             // If the line wasn't handled by an animation, process it normally
             if (!handled) {
                 if (line.contains("<") || line.contains(">") || line.contains("%")) {
-                    builder.addDynamicLine(() -> ColorUtil.translate(line));
+                    builder.addDynamicLine(() -> ColorUtil.translate(player, line));
                 } else {
-                    builder.addStaticLine(ColorUtil.translate(line));
+                    builder.addStaticLine(ColorUtil.translate(player, line));
                 }
             }
         }

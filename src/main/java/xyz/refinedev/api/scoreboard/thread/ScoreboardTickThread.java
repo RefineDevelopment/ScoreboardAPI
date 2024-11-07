@@ -58,15 +58,11 @@ public class ScoreboardTickThread extends Thread {
                 }
 
                 board.tick();
-            } catch (RuntimeException e) {
+            } catch (Exception e) {
                 if (this.scoreboardHandler.isDebug()) {
                     logger.log(Level.SEVERE, "There was an error updating " + player.getName() + "'s scoreboard.");
                     logger.log(Level.SEVERE, e.getMessage(), e);
                 }
-            } catch (Exception e) {
-                if (e instanceof NullPointerException && !this.scoreboardHandler.isDebug()) return;
-                logger.log(Level.SEVERE, "There was an error updating " + player.getName() + "'s scoreboard.");
-                logger.log(Level.SEVERE, e.getMessage(), e);
             }
         }
     }

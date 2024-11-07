@@ -1,5 +1,6 @@
 package xyz.refinedev.api.scoreboard;
 
+import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -10,6 +11,7 @@ import net.megavex.scoreboardlibrary.api.noop.NoopScoreboardLibrary;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import xyz.refinedev.api.scoreboard.adapter.ScoreboardAdapter;
@@ -48,13 +50,8 @@ public class ScoreboardHandler {
     private ScoreboardTickThread thread;
 
     public void init() {
-        try {
-            this.scoreboardLibrary = ScoreboardLibrary.loadScoreboardLibrary(plugin);
-        } catch (NoPacketAdapterAvailableException e) {
-            // If no packet adapter was found, you can fall back to the no-op implementation:
-            this.scoreboardLibrary = new NoopScoreboardLibrary();
-            this.plugin.getLogger().warning("No scoreboard packet adapter available!");
-        }
+        this.scoreboardLibrary = Bukkit.getServicesManager().load(ScoreboardLibrary.class);
+        Preconditions.checkArgument(this.scoreboardLibrary != null, "ScoreboardLibrary is not registered!");
 
         this.setup();
     }
