@@ -6,6 +6,7 @@ import net.kyori.adventure.text.Component;
 
 import net.megavex.scoreboardlibrary.api.sidebar.component.animation.CollectionSidebarAnimation;
 import net.megavex.scoreboardlibrary.api.sidebar.component.animation.SidebarAnimation;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +26,10 @@ import java.util.List;
 @UtilityClass
 public class AnimationUtil {
 
-    public static SidebarAnimation<Component> createAnimation(List<String> title) {
+    public static SidebarAnimation<Component> createAnimation(Player player, List<String> title) {
         List<Component> frames = new ArrayList<>(title.size());
         for (String line : title) {
-            frames.add(ColorUtil.translate(line));
+            frames.add(ColorUtil.translate(player, line));
         }
 
         return new CollectionSidebarAnimation<>(frames);

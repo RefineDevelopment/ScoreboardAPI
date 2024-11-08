@@ -55,7 +55,7 @@ public class DefaultScoreboardComponent {
 
         this.animated = titleLines.size() > 1;
         if (animated) {
-            this.titleAnimation = AnimationUtil.createAnimation(titleLines);
+            this.titleAnimation = AnimationUtil.createAnimation(player, titleLines);
             title = SidebarComponent.animatedLine(titleAnimation);
         } else {
             title = SidebarComponent.staticLine(ColorUtil.translate(player, titleLines.get(0)));
