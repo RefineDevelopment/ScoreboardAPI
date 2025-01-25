@@ -4,8 +4,6 @@ import com.google.common.base.Preconditions;
 
 import lombok.Getter;
 
-import net.kyori.adventure.text.Component;
-
 import net.megavex.scoreboardlibrary.api.sidebar.Sidebar;
 import net.megavex.scoreboardlibrary.api.sidebar.component.ComponentSidebarLayout;
 import net.megavex.scoreboardlibrary.api.sidebar.component.SidebarComponent;
@@ -15,24 +13,24 @@ import org.bukkit.entity.Player;
 
 import xyz.refinedev.api.scoreboard.adapter.ScoreboardAdapter;
 import xyz.refinedev.api.scoreboard.animation.ScoreboardAnimation;
-import xyz.refinedev.api.scoreboard.utils.AnimationUtil;
 import xyz.refinedev.api.scoreboard.utils.ColorUtil;
 
 import java.util.*;
 
 @Getter
-public class DefaultScoreboardComponent {
+public class ScoreboardComponent {
 
-    private final Map<String, ScoreboardAnimation> animations = new HashMap<>();
+    private final List<ScoreboardAnimation> animations = new ArrayList<>();
 
     private final Sidebar sidebar;
     private final Player player;
     private final ScoreboardAdapter adapter;
 
-    private boolean animated;
-    private ComponentSidebarLayout componentSidebar;
+    private boolean hasTicked;
     private SidebarComponent title;
-    private SidebarAnimation<Component> titleAnimation;
+    private ScoreboardAnimation titleAnimation;
+
+    private int ticks, tickSpeed;
 
     /**
      * Create a scoreboard for the given player.
@@ -41,7 +39,7 @@ public class DefaultScoreboardComponent {
      * @param sidebar {@link Sidebar} The sidebar to display the scoreboard on.
      * @param player  {@link Player} The player to display the scoreboard to.
      */
-    public DefaultScoreboardComponent(ScoreboardAdapter adapter, Sidebar sidebar, Player player) {
+    public ScoreboardComponent(ScoreboardAdapter adapter, Sidebar sidebar, Player player) {
         this.sidebar = sidebar;
         this.adapter = adapter;
         this.player = player;
@@ -50,15 +48,20 @@ public class DefaultScoreboardComponent {
     }
 
     public void setup() {
-        List<String> titleLines = this.adapter.getTitle(this.player);
+        this.tickSpeed = this.adapter.getLineUpdateTicks(player);
+
+        TitleComponent titleComponent = this.adapter.getTitle(this.player);
+        List<String> titleLines = titleComponent.getTitleLines();
         Preconditions.checkArgument(!titleLines.isEmpty(), "Title lines cannot be empty");
 
-        this.animated = titleLines.size() > 1;
-        if (animated) {
-            this.titleAnimation = AnimationUtil.createAnimation(player, titleLines);
-            title = SidebarComponent.animatedLine(titleAnimation);
+        if (titleComponent.isTitleAnimated()) {
+            int titleAnimationSpeed = titleComponent.getAnimationSpeed();
+            int titleReplayDelay = titleComponent.getReplayDelay();
+
+            this.titleAnimation = ScoreboardAnimation.create(player, "title", titleLines, titleAnimationSpeed, titleReplayDelay);
+            this.title = SidebarComponent.animatedLine(titleAnimation.getComponent());
         } else {
-            title = SidebarComponent.staticLine(ColorUtil.translate(player, titleLines.get(0)));
+            this.title = SidebarComponent.staticLine(ColorUtil.translate(player, titleLines.get(0)));
         }
     }
 
@@ -69,8 +72,20 @@ public class DefaultScoreboardComponent {
     }
 
     // Called every tick
-    public void tick() {
+    public void tickScoreboard() {
         if (this.sidebar.closed()) return;
+
+        if (!this.hasTicked) {
+            this.hasTicked = true;
+        }
+
+        this.ticks++;
+
+        if (this.ticks < this.tickSpeed) {
+            return;
+        }
+
+        this.ticks = 0;
 
         List<String> lines = this.adapter.getLines(this.player);
         if (lines.isEmpty()) {
@@ -84,26 +99,24 @@ public class DefaultScoreboardComponent {
             }
         }
 
-        this.tickAnimation();
-
         SidebarComponent component = createComponent(lines);
-        this.componentSidebar = new ComponentSidebarLayout(title, component);
+        ComponentSidebarLayout componentSidebar = new ComponentSidebarLayout(title, component);
 
         // Update sidebar title & lines
-        this.componentSidebar.apply(this.sidebar);
+        componentSidebar.apply(this.sidebar);
     }
 
     public void tickAnimation() {
         if (this.sidebar.closed()) return;
 
         // Advance title animation to the next frame
-        if (this.animated && this.titleAnimation != null) {
-            this.titleAnimation.nextFrame();
+        if (this.titleAnimation != null) {
+            this.titleAnimation.tick();
         }
 
         if (!this.animations.isEmpty()) {
-            for ( ScoreboardAnimation animation : this.animations.values() ) {
-                animation.getComponent().nextFrame();
+            for ( ScoreboardAnimation animation : this.animations ) {
+                animation.tick();
             }
         }
     }
@@ -114,16 +127,31 @@ public class DefaultScoreboardComponent {
      * @param animation {@link SidebarAnimation} The animation to add.
      */
     public void addAnimation(ScoreboardAnimation animation) {
-        this.animations.put(animation.getIdentifier(), animation);
+        this.animations.add(animation);
+    }
+
+    /**
+     * Get an animation from this scoreboard.
+     *
+     * @param identifier {@link String} The identifier of the animation to get.
+     * @return {@link ScoreboardAnimation} The animation with the given identifier.
+     */
+    public ScoreboardAnimation getAnimation(String identifier) {
+        for (ScoreboardAnimation animation : this.animations) {
+            if (animation.getIdentifier().equals(identifier)) {
+                return animation;
+            }
+        }
+        return null;
     }
 
     /**
      * Remove an animation from this scoreboard.
      *
-     * @param identifier {@link String} The identifier of the animation to remove.
+     * @param animation {@link ScoreboardAnimation} The animation to remove.
      */
-    public void removeAnimation(String identifier) {
-        this.animations.remove(identifier);
+    public void removeAnimation(ScoreboardAnimation animation) {
+        this.animations.remove(animation);
     }
 
     private SidebarComponent createComponent(List<String> lines) {
@@ -137,13 +165,12 @@ public class DefaultScoreboardComponent {
             // Check if the line contains any animation identifier
             boolean handled = false;
             if (!this.animations.isEmpty()) {
-                for (String identifier : this.animations.keySet()) {
-                    if (line.contains(identifier)) {
+                for (ScoreboardAnimation animation : this.animations) {
+                    if (line.contains(animation.getIdentifier())) {
                         // Add the animated line if the identifier is found
-                        ScoreboardAnimation animation = this.animations.get(identifier);
                         builder.addAnimatedLine(animation.getComponent());
                         handled = true; // Mark this line as handled
-                        break; // Break out of the animation map lookup loop
+                        break;
                     }
                 }
             }

@@ -4,24 +4,18 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.player.PlayerManager;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 
 import lombok.experimental.UtilityClass;
-import lombok.extern.log4j.Log4j2;
 
 import lombok.val;
 import net.kyori.adventure.text.Component;
 
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-import java.awt.*;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

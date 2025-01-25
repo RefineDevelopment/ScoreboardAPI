@@ -17,9 +17,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import xyz.refinedev.api.scoreboard.ScoreboardHandler;
-import xyz.refinedev.api.scoreboard.component.DefaultScoreboardComponent;
+import xyz.refinedev.api.scoreboard.component.ScoreboardComponent;
 
-@Getter @Ignore
+@Getter
+@Ignore
 @RequiredArgsConstructor
 public class ScoreboardListener implements Listener {
 
@@ -30,12 +31,12 @@ public class ScoreboardListener implements Listener {
         Player player = event.getPlayer();
 
         Sidebar sidebar = this.scoreboardHandler.getScoreboardLibrary().createSidebar();
-        DefaultScoreboardComponent board = new DefaultScoreboardComponent(this.scoreboardHandler.getAdapter(), sidebar, player);
+        ScoreboardComponent board = new ScoreboardComponent(this.scoreboardHandler.getAdapter(), sidebar, player);
 
         sidebar.addPlayer(player);
 
         board.setup();
-        board.tick();
+        board.tickScoreboard();
 
         this.scoreboardHandler.registerScoreboard(player, board);
 
@@ -49,7 +50,7 @@ public class ScoreboardListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        DefaultScoreboardComponent board = this.scoreboardHandler.unregisterScoreboard(player);
+        ScoreboardComponent board = this.scoreboardHandler.unregisterScoreboard(player);
         if (board != null) {
             board.getSidebar().close();
         }

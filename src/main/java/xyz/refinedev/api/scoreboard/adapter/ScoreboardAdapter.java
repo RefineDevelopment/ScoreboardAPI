@@ -1,6 +1,7 @@
 package xyz.refinedev.api.scoreboard.adapter;
 
 import org.bukkit.entity.Player;
+import xyz.refinedev.api.scoreboard.component.TitleComponent;
 
 import java.util.List;
 
@@ -19,12 +20,20 @@ import java.util.List;
 public interface ScoreboardAdapter {
 
     /**
+     * Gets the scoreboard tick speed
+     *
+     * @param player who's lines are being displayed.
+     * @return tick speed
+     */
+    int getLineUpdateTicks(Player player);
+
+    /**
      * Gets the scoreboard title.
      *
      * @param player who's title is being displayed.
-     * @return title.
+     * @return pair of title and title tick speed
      */
-    List<String> getTitle(Player player);
+    TitleComponent getTitle(Player player);
 
     /**
      * Gets the scoreboard lines.
@@ -33,6 +42,5 @@ public interface ScoreboardAdapter {
      * @return lines
      */
     List<String> getLines(Player player);
-
 }
 

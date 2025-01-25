@@ -6,16 +6,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import net.megavex.scoreboardlibrary.api.ScoreboardLibrary;
-import net.megavex.scoreboardlibrary.api.exception.NoPacketAdapterAvailableException;
-import net.megavex.scoreboardlibrary.api.noop.NoopScoreboardLibrary;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import xyz.refinedev.api.scoreboard.adapter.ScoreboardAdapter;
-import xyz.refinedev.api.scoreboard.component.DefaultScoreboardComponent;
+import xyz.refinedev.api.scoreboard.component.ScoreboardComponent;
 import xyz.refinedev.api.scoreboard.thread.ScoreboardTickThread;
 
 import java.util.Map;
@@ -38,12 +35,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class ScoreboardHandler {
 
-    private final Map<UUID, DefaultScoreboardComponent> boards = new ConcurrentHashMap<>();
+    private final Map<UUID, ScoreboardComponent> boards = new ConcurrentHashMap<>();
 
     private final JavaPlugin plugin;
     private final ScoreboardAdapter adapter;
 
-    @Setter private long ticks = 10;
     @Setter private boolean debug;
 
     private ScoreboardLibrary scoreboardLibrary;
@@ -60,13 +56,17 @@ public class ScoreboardHandler {
         // Ensure that the thread has stopped running.
         if (this.thread != null) {
             this.thread.stopExecuting();
-            this.thread.interrupt();
             this.thread = null;
+
+            this.boards.forEach((uuid, component) -> {
+                component.getSidebar().close();
+            });
+            this.boards.clear();
         }
 
         // Register new boards for existing online players.
         for (Player player : Bukkit.getOnlinePlayers()) {
-            getBoards().putIfAbsent(player.getUniqueId(), new DefaultScoreboardComponent(adapter, scoreboardLibrary.createSidebar(), player));
+            getBoards().putIfAbsent(player.getUniqueId(), new ScoreboardComponent(adapter, scoreboardLibrary.createSidebar(), player));
         }
 
         // Start Thread.
@@ -74,7 +74,7 @@ public class ScoreboardHandler {
     }
 
     public void reload() {
-        for ( DefaultScoreboardComponent component : this.boards.values() ) {
+        for ( ScoreboardComponent component : this.boards.values() ) {
             component.reload();
         }
     }
@@ -85,11 +85,11 @@ public class ScoreboardHandler {
         this.scoreboardLibrary.close();
     }
 
-    public void registerScoreboard(Player player, DefaultScoreboardComponent component) {
+    public void registerScoreboard(Player player, ScoreboardComponent component) {
         this.boards.put(player.getUniqueId(), component);
     }
 
-    public DefaultScoreboardComponent unregisterScoreboard(Player player) {
+    public ScoreboardComponent unregisterScoreboard(Player player) {
         return this.boards.remove(player.getUniqueId());
     }
 }

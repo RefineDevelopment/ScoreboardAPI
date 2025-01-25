@@ -1,19 +1,19 @@
 package xyz.refinedev.api.scoreboard.thread;
 
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-
 import xyz.refinedev.api.scoreboard.ScoreboardHandler;
-import xyz.refinedev.api.scoreboard.component.DefaultScoreboardComponent;
+import xyz.refinedev.api.scoreboard.component.ScoreboardComponent;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-public class ScoreboardTickThread extends Thread {
+public class ScoreboardTickThread {
 
     private final ScoreboardHandler scoreboardHandler;
+    private final ScheduledExecutorService executorService;
     private final Logger logger;
-    private volatile boolean running = true;
 
     /**
      * ScoreboardHandler Thread.
@@ -21,50 +21,40 @@ public class ScoreboardTickThread extends Thread {
      * @param scoreboardHandler instance.
      */
     public ScoreboardTickThread(ScoreboardHandler scoreboardHandler) {
-        super(scoreboardHandler.getPlugin().getName() + " - Scoreboard Thread");
+        String name = scoreboardHandler.getPlugin().getName() + " - Scoreboard Thread";
+        this.executorService = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, name));
+        this.executorService.scheduleAtFixedRate(this::tick, 0, 1, TimeUnit.MILLISECONDS);
+
         this.scoreboardHandler = scoreboardHandler;
         this.logger = scoreboardHandler.getPlugin().getLogger();
-        this.start();
-    }
-
-    @Override
-    public void run() {
-        while (running) {
-            this.tick();
-
-            try {
-                Thread.sleep(scoreboardHandler.getTicks() * 50);
-            } catch (InterruptedException e) {
-                this.stopExecuting();
-            }
-        }
     }
 
     public void stopExecuting() {
-        this.running = false;
+        this.executorService.shutdown();
     }
 
     /**
      * Tick logic for thread.
      */
     private void tick() {
-        for ( Player player : Bukkit.getOnlinePlayers() ) {
+        for ( ScoreboardComponent board : this.scoreboardHandler.getBoards().values() ) {
             try {
-                DefaultScoreboardComponent board = this.scoreboardHandler.getBoards().get(player.getUniqueId());
-
                 // This shouldn't happen, but just in case.
                 if (board == null || board.getSidebar().closed()) {
                     continue;
                 }
 
-                board.tick();
+                if (board.isHasTicked()) {
+                    board.tickAnimation();
+                }
+
+                board.tickScoreboard();
             } catch (Exception e) {
                 if (this.scoreboardHandler.isDebug()) {
-                    logger.log(Level.SEVERE, "There was an error updating " + player.getName() + "'s scoreboard.");
+                    logger.log(Level.SEVERE, "There was an error updating " + board.getPlayer().getName() + "'s scoreboard.");
                     logger.log(Level.SEVERE, e.getMessage(), e);
                 }
             }
         }
     }
-
-}
+    }
