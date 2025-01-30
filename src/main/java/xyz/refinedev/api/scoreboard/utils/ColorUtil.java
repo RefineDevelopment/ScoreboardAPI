@@ -2,14 +2,17 @@ package xyz.refinedev.api.scoreboard.utils;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.player.PlayerManager;
+import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
+
 import com.google.common.base.Preconditions;
 
 import lombok.experimental.UtilityClass;
-
 import lombok.val;
+
 import net.kyori.adventure.text.Component;
 
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 import org.bukkit.Bukkit;
@@ -67,11 +70,16 @@ public class ColorUtil {
      */
     public static Component translate(Player player, String string) {
         PlayerManager playerManager = PacketEvents.getAPI().getPlayerManager();
+        ServerVersion serverVersion = PacketEvents.getAPI().getServerManager().getVersion();;
         ClientVersion clientVersion = playerManager.getClientVersion(player);
-        if (clientVersion.isOlderThan(ClientVersion.V_1_16)) {
+        if (clientVersion.isOlderThan(ClientVersion.V_1_16) || serverVersion.isOlderThan(ServerVersion.V_1_16)) {
             return Component.text(color(string));
         }
-        return legacy.deserialize(translateAlternateColorCodes('&', string));
+
+        MiniMessage miniMessage = MiniMessage.miniMessage();
+        Component legacyComponent = legacy.deserialize(translateAlternateColorCodes('&', string));
+        String minimessage = miniMessage.serialize(legacyComponent).replace("\\", "");
+        return miniMessage.deserialize(minimessage);
     }
 
     public static String translateAlternateColorCodes(char altColorChar, String textToTranslate) {
