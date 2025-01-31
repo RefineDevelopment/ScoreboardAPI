@@ -16,6 +16,7 @@ import xyz.refinedev.api.scoreboard.animation.ScoreboardAnimation;
 import xyz.refinedev.api.scoreboard.utils.ColorUtil;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Getter
 public class ScoreboardComponent {
@@ -31,6 +32,9 @@ public class ScoreboardComponent {
     private ScoreboardAnimation titleAnimation;
 
     private int ticks, tickSpeed;
+
+    @Getter private final AtomicBoolean closed = new AtomicBoolean(false);
+
 
     /**
      * Create a scoreboard for the given player.
@@ -71,9 +75,14 @@ public class ScoreboardComponent {
         this.sidebar.addPlayer(this.player);
     }
 
+    public void close() {
+        this.closed.set(true);
+        this.sidebar.close();
+    }
+
     // Called every tick
     public void tickScoreboard() {
-        if (this.sidebar.closed()) return;
+        if (this.closed.get() || this.sidebar.closed()) return;
 
         if (!this.hasTicked) {
             this.hasTicked = true;
@@ -107,7 +116,7 @@ public class ScoreboardComponent {
     }
 
     public void tickAnimation() {
-        if (this.sidebar.closed()) return;
+        if (this.closed.get() || this.sidebar.closed()) return;
 
         // Advance title animation to the next frame
         if (this.titleAnimation != null) {

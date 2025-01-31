@@ -40,7 +40,7 @@ public class ScoreboardTickThread {
         for ( ScoreboardComponent board : this.scoreboardHandler.getBoards().values() ) {
             try {
                 // This shouldn't happen, but just in case.
-                if (board == null || board.getSidebar().closed()) {
+                if (board == null || board.getSidebar().closed() || board.getClosed().get()) {
                     continue;
                 }
 
