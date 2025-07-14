@@ -53,7 +53,6 @@ public class ScoreboardComponent {
 
     public void setup() {
         this.tickSpeed = this.adapter.getLineUpdateTicks(player);
-
         TitleComponent titleComponent = this.adapter.getTitle(this.player);
         List<String> titleLines = titleComponent.getTitleLines();
         Preconditions.checkArgument(!titleLines.isEmpty(), "Title lines cannot be empty");
@@ -81,6 +80,24 @@ public class ScoreboardComponent {
     }
 
     // Called every tick
+    public void tickTitle() {
+        TitleComponent titleComponent = this.adapter.getTitle(this.player);
+        List<String> titleLines = titleComponent.getTitleLines();
+
+        if (titleComponent.isTitleAnimated()) {
+            int titleAnimationSpeed = titleComponent.getAnimationSpeed();
+            int titleReplayDelay = titleComponent.getReplayDelay();
+
+            this.titleAnimation.setAnimationSpeed(titleAnimationSpeed);
+            this.titleAnimation.setReplayDelay(titleReplayDelay);
+            this.titleAnimation.setLines(this.player, titleLines);
+
+            this.title = SidebarComponent.animatedLine(titleAnimation.getComponent());
+        } else if (!titleLines.isEmpty()) {
+            this.title = SidebarComponent.staticLine(ColorUtil.translate(player, titleLines.get(0)));
+        }
+    }
+
     public void tickScoreboard() {
         if (this.closed.get() || this.sidebar.closed()) return;
 
@@ -96,6 +113,8 @@ public class ScoreboardComponent {
 
         this.ticks = 0;
 
+        this.tickTitle();
+
         List<String> lines = this.adapter.getLines(this.player);
         if (lines.isEmpty()) {
             if (this.sidebar.players().contains(this.player)) {
@@ -109,7 +128,7 @@ public class ScoreboardComponent {
         }
 
         SidebarComponent component = createComponent(lines);
-        ComponentSidebarLayout componentSidebar = new ComponentSidebarLayout(title, component);
+        ComponentSidebarLayout componentSidebar = new ComponentSidebarLayout(this.title, component);
 
         // Update sidebar title & lines
         componentSidebar.apply(this.sidebar);
