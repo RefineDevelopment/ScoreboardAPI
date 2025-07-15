@@ -81,19 +81,12 @@ public class ScoreboardComponent {
 
     // Called every tick
     public void tickTitle() {
+        if (this.titleAnimation != null) return;
+
         TitleComponent titleComponent = this.adapter.getTitle(this.player);
         List<String> titleLines = titleComponent.getTitleLines();
 
-        if (titleComponent.isTitleAnimated()) {
-            int titleAnimationSpeed = titleComponent.getAnimationSpeed();
-            int titleReplayDelay = titleComponent.getReplayDelay();
-
-            this.titleAnimation.setAnimationSpeed(titleAnimationSpeed);
-            this.titleAnimation.setReplayDelay(titleReplayDelay);
-            this.titleAnimation.setLines(this.player, titleLines);
-
-            this.title = SidebarComponent.animatedLine(titleAnimation.getComponent());
-        } else if (!titleLines.isEmpty()) {
+        if (!titleComponent.isTitleAnimated() && !titleLines.isEmpty()) {
             this.title = SidebarComponent.staticLine(ColorUtil.translate(player, titleLines.get(0)));
         }
     }
