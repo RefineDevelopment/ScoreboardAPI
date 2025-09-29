@@ -51,6 +51,8 @@ public class ScoreboardTickThread {
                 board.tickScoreboard();
             } catch (Exception e) {
                 if (this.scoreboardHandler.isDebug()) {
+                    if (e.getMessage().contains("Sidebar is closed")) return; // Don't print race conditions
+
                     logger.log(Level.SEVERE, "There was an error updating " + board.getPlayer().getName() + "'s scoreboard.");
                     logger.log(Level.SEVERE, e.getMessage(), e);
                 }
