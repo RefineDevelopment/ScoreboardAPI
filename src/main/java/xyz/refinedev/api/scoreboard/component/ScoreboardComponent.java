@@ -64,7 +64,7 @@ public class ScoreboardComponent {
             this.titleAnimation = ScoreboardAnimation.create(player, "title", titleLines, titleAnimationSpeed, titleReplayDelay);
             this.title = SidebarComponent.animatedLine(titleAnimation.getComponent());
         } else {
-            this.title = SidebarComponent.staticLine(ColorUtil.translate(player, titleLines.get(0)));
+            this.title = SidebarComponent.staticLine(ColorUtil.translate(titleLines.get(0)));
         }
     }
 
@@ -87,7 +87,7 @@ public class ScoreboardComponent {
         List<String> titleLines = titleComponent.getTitleLines();
 
         if (!titleComponent.isTitleAnimated() && !titleLines.isEmpty()) {
-            this.title = SidebarComponent.staticLine(ColorUtil.translate(player, titleLines.get(0)));
+            this.title = SidebarComponent.staticLine(ColorUtil.translate(titleLines.get(0)));
         }
     }
 
@@ -199,9 +199,9 @@ public class ScoreboardComponent {
             // If the line wasn't handled by an animation, process it normally
             if (!handled) {
                 if (line.contains("<") || line.contains(">") || line.contains("%")) {
-                    builder.addDynamicLine(() -> ColorUtil.translate(player, line));
+                    builder.addDynamicLine(() -> ColorUtil.translate(line));
                 } else {
-                    builder.addStaticLine(ColorUtil.translate(player, line));
+                    builder.addStaticLine(ColorUtil.translate(line));
                 }
             }
         }

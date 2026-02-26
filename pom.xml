@@ -6,7 +6,7 @@
 
     <groupId>xyz.refinedev.api</groupId>
     <artifactId>ScoreboardAPI</artifactId>
-    <version>1.0</version>
+    <version>1.1.1</version>
 
     <pluginRepositories>
         <pluginRepository>
@@ -43,7 +43,7 @@
         </repository>
         <repository>
             <id>refine-public</id>
-            <url>https://maven.refinedev.xyz/public-repo</url>
+            <url>https://maven.refinedev.org/public-repo</url>
         </repository>
         <repository>
             <id>codemc-repo</id>
@@ -54,7 +54,7 @@
     <distributionManagement>
         <repository>
             <id>refine-public</id>
-            <url>https://maven.refinedev.xyz/public-repo</url>
+            <url>https://maven.refinedev.org/public-repo</url>
         </repository>
     </distributionManagement>
 
@@ -120,9 +120,12 @@
         <dependency>
             <groupId>net.megavex</groupId>
             <artifactId>scoreboard-library-api</artifactId>
-            <version>2.4.0</version>
-            <scope>provided</scope>
+            <version>2.7.0-SNAPSHOT</version>
             <exclusions>
+                <exclusion>
+                    <groupId>com.google.code.gson</groupId>
+                    <artifactId>gson</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>org.jetbrains</groupId>
                     <artifactId>annotations</artifactId>
@@ -132,139 +135,13 @@
         <dependency>
             <groupId>net.megavex</groupId>
             <artifactId>scoreboard-library-implementation</artifactId>
-            <version>2.4.0</version>
-            <scope>provided</scope>
+            <version>2.7.0-SNAPSHOT</version>
+            <scope>runtime</scope>
             <exclusions>
                 <exclusion>
                     <groupId>com.google.code.gson</groupId>
                     <artifactId>gson</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>org.jetbrains</groupId>
-                    <artifactId>annotations</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>net.megavex</groupId>
-            <artifactId>scoreboard-library-packetevents</artifactId>
-            <version>2.4.0</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.code.gson</groupId>
-                    <artifactId>gson</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jetbrains</groupId>
-                    <artifactId>annotations</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>net.megavex</groupId>
-            <artifactId>scoreboard-library-legacy</artifactId>
-            <version>2.4.0</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.code.gson</groupId>
-                    <artifactId>gson</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jetbrains</groupId>
-                    <artifactId>annotations</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>com.github.retrooper</groupId>
-            <artifactId>packetevents-spigot</artifactId>
-            <version>2.9.1</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.code.gson</groupId>
-                    <artifactId>gson</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jetbrains</groupId>
-                    <artifactId>annotations</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.github.retrooper</groupId>
-                    <artifactId>packetevents-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.github.retrooper.packetevents</groupId>
-                    <artifactId>netty-common</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.github.retrooper</groupId>
-            <artifactId>packetevents-api</artifactId>
-            <version>2.9.1</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.code.gson</groupId>
-                    <artifactId>gson</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jetbrains</groupId>
-                    <artifactId>annotations</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.github.retrooper.packetevents</groupId>
-                    <artifactId>netty-common</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-text-serializer-legacy</artifactId>
-            <version>4.18.0</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.jetbrains</groupId>
-                    <artifactId>annotations</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-text-serializer-bungeecord</artifactId>
-            <version>4.3.1</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.jetbrains</groupId>
-                    <artifactId>annotations</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-platform-bukkit</artifactId>
-            <version>4.3.4</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.jetbrains</groupId>
-                    <artifactId>annotations</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-text-minimessage</artifactId>
-            <version>4.18.0</version>
-            <scope>provided</scope>
-            <exclusions>
                 <exclusion>
                     <groupId>org.jetbrains</groupId>
                     <artifactId>annotations</artifactId>
@@ -305,6 +182,7 @@
                             <artifact>*:*</artifact>
                             <excludes>
                                 <exclude>META-INF/**</exclude>
+                                <exclude>com/google/**</exclude>
                             </excludes>
                         </filter>
                     </filters>

@@ -30,7 +30,7 @@ public class AnimationUtil {
     public static FramedSidebarAnimation<Component> createAnimation(Player player, List<String> title) {
         List<Component> frames = new ArrayList<>(title.size());
         for (String line : title) {
-            frames.add(ColorUtil.translate(player, line));
+            frames.add(ColorUtil.translate(line));
         }
 
         return new CollectionSidebarAnimation<>(frames);
