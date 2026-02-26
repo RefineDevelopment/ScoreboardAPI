@@ -6,7 +6,7 @@
 
     <groupId>xyz.refinedev.api</groupId>
     <artifactId>ScoreboardAPI</artifactId>
-    <version>1.1.1</version>
+    <version>1.1.2</version>
 
     <pluginRepositories>
         <pluginRepository>
