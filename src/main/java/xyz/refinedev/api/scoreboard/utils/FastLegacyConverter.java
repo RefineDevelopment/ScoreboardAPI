@@ -40,6 +40,11 @@ public class FastLegacyConverter {
         char[] chars = input.toCharArray();
         StringBuilder builder = new StringBuilder(input.length() + 32);
 
+        // A tiny stack to keep track of active formatting tags.
+        // There are only 5 valid formatting codes (k, l, m, n, o).
+        char[] formatStack = new char[5];
+        int stackSize = 0;
+
         for (int i = 0; i < chars.length; i++) {
             char c = chars[i];
 
@@ -48,6 +53,11 @@ public class FastLegacyConverter {
 
                 // 1. Handle BungeeCord Hex: &#RRGGBB
                 if (code == '#' && i + 7 < chars.length) {
+                    // Hex acts as a color, so we must close active formatting
+                    while (stackSize > 0) {
+                        builder.append("</").append(LEGACY_MAP[formatStack[--stackSize]].substring(1));
+                    }
+
                     builder.append("<#");
                     for (int j = 2; j <= 7; j++) {
                         builder.append(chars[i + j]);
@@ -59,29 +69,65 @@ public class FastLegacyConverter {
 
                 // 2. Handle Spigot Hex: &x&r&r&g&g&b&b
                 if (code == 'x' && i + 13 < chars.length) {
+                    // Close active formatting
+                    while (stackSize > 0) {
+                        builder.append("</").append(LEGACY_MAP[formatStack[--stackSize]].substring(1));
+                    }
+
                     builder.append("<#")
-                           .append(chars[i + 3])
-                           .append(chars[i + 5])
-                           .append(chars[i + 7])
-                           .append(chars[i + 9])
-                           .append(chars[i + 11])
-                           .append(chars[i + 13])
-                           .append(">");
+                            .append(chars[i + 3])
+                            .append(chars[i + 5])
+                            .append(chars[i + 7])
+                            .append(chars[i + 9])
+                            .append(chars[i + 11])
+                            .append(chars[i + 13])
+                            .append(">");
                     i += 13; // Skip the entire spigot hex chain
                     continue;
                 }
 
-                // 3. Handle Standard Legacy: &a, &l, etc.
-                String replacement = code < 256 ? LEGACY_MAP[code] : null;
-                if (replacement != null) {
-                    builder.append(replacement);
-                    i++; // Skip the color code character
+                // 3. Handle Standard Legacy Colors and Formatting
+                boolean isColor = (code >= '0' && code <= '9') || (code >= 'a' && code <= 'f');
+                boolean isFormat = (code >= 'k' && code <= 'o');
+                boolean isReset = (code == 'r');
+
+                if (isColor || isReset) {
+                    // A new color or reset code cancels all previous formatting.
+                    // We pop tags off the stack in reverse order to satisfy MiniMessage's strict tree hierarchy.
+                    while (stackSize > 0) {
+                        // Dynamically generates the closing tag. (e.g. "<bold>" -> "</bold>")
+                        builder.append("</").append(LEGACY_MAP[formatStack[--stackSize]].substring(1));
+                    }
+                    builder.append(LEGACY_MAP[code]);
+                    i++;
+                    continue;
+                }
+
+                if (isFormat) {
+                    // Ensure we don't push duplicate formats to the stack (e.g. "&l&l")
+                    boolean exists = false;
+                    for (int j = 0; j < stackSize; j++) {
+                        if (formatStack[j] == code) {
+                            exists = true;
+                            break;
+                        }
+                    }
+
+                    if (!exists) {
+                        formatStack[stackSize++] = code;
+                        builder.append(LEGACY_MAP[code]);
+                    }
+                    i++;
                     continue;
                 }
             }
-            
             // Not a color code, just append the character
             builder.append(c);
+        }
+
+        // 4. End of string: close any remaining open formatting tags cleanly
+        while (stackSize > 0) {
+            builder.append("</").append(LEGACY_MAP[formatStack[--stackSize]].substring(1));
         }
 
         return builder.toString();
